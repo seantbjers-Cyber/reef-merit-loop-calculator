@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reef Media — Merit Loop Annotation Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#0D1B2A;--card:#1B2838;--border:#2A3F55;--text:#E0E6ED;--dim:#8899AA;--accent:#4DA8DA;--warn:#E8A838;--good:#2ECC71;--great:#3498DB;--best:#9B59B6;--coral:#E74C3C;--bin:#E8A838;--multi:#4DA8DA; }
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6; }
+  .container { max-width:1100px;margin:0 auto;padding:32px 24px; }
+  .header { text-align:center;margin-bottom:40px; }
+  .header h1 { font-size:28px;font-weight:700;color:#fff;margin-bottom:4px; }
+  .header .sub { font-size:14px;color:var(--dim); }
+  .grid { display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px; }
+  @media(max-width:768px){.grid{grid-template-columns:1fr;}}
+  .card { background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px; }
+  .card h2 { font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);margin-bottom:20px;font-weight:600; }
+  .slider-group { margin-bottom:18px; }
+  .slider-label { display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px; }
+  .slider-label span:first-child { font-size:13px;color:var(--text);font-weight:500; }
+  .slider-value { font-size:18px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums; }
+  input[type="range"] { -webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);box-shadow:0 2px 6px rgba(0,0,0,.4); }
+  input[type="range"]::-moz-range-thumb { width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg); }
+  .hero-grid { display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px; }
+  @media(max-width:768px){.hero-grid{grid-template-columns:1fr;}}
+  .hero-box { text-align:center;padding:24px 16px;border-radius:12px;border:1px solid var(--border); }
+  .hero-box.binary { background:linear-gradient(135deg,rgba(232,168,56,0.1),rgba(232,168,56,0.04));border-color:rgba(232,168,56,0.3); }
+  .hero-box.multi { background:linear-gradient(135deg,rgba(77,168,218,0.12),rgba(91,192,190,0.06));border-color:rgba(77,168,218,0.3); }
+  .hero-box .label-tag { font-size:11px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px; }
+  .hero-box.binary .label-tag { color:var(--bin); }
+  .hero-box.multi .label-tag { color:var(--multi); }
+  .hero-box .big-number { font-size:40px;font-weight:800;color:#fff;line-height:1.1;font-variant-numeric:tabular-nums; }
+  .hero-box .sub-label { font-size:12px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px; }
+  .tier-badge { display:inline-block;padding:5px 14px;border-radius:16px;font-size:12px;font-weight:700;margin-top:8px;text-transform:uppercase;letter-spacing:0.5px; }
+  .tier-0{background:rgba(231,76,60,0.2);color:var(--coral);border:1px solid rgba(231,76,60,0.3);}
+  .tier-1{background:rgba(232,168,56,0.2);color:var(--warn);border:1px solid rgba(232,168,56,0.3);}
+  .tier-2{background:rgba(46,204,113,0.2);color:var(--good);border:1px solid rgba(46,204,113,0.3);}
+  .tier-3{background:rgba(52,152,219,0.2);color:var(--great);border:1px solid rgba(52,152,219,0.3);}
+  .tier-4{background:rgba(155,89,182,0.2);color:var(--best);border:1px solid rgba(155,89,182,0.3);}
+  .multiplier-badge { display:inline-block;padding:6px 14px;border-radius:20px;font-size:14px;font-weight:700;margin-top:10px;background:rgba(46,204,113,0.15);color:var(--good);border:1px solid rgba(46,204,113,0.3); }
+  .stat-row { display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap; }
+  .stat-item { flex:1;min-width:120px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center; }
+  .stat-item .num { font-size:20px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums; }
+  .stat-item .lbl { font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px; }
+  .tipping-table { width:100%;border-collapse:collapse;margin-top:8px; }
+  .tipping-table th { font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-weight:600; }
+  .tipping-table td { font-size:12px;padding:8px;border-bottom:1px solid rgba(42,63,85,0.5);font-variant-numeric:tabular-nums; }
+  .check { color:var(--good);font-weight:700; }
+  .cross { color:var(--dim); }
+  .chart-wrap { position:relative;height:280px;margin-top:12px; }
+  .formula-box { background:rgba(77,168,218,0.08);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--accent);line-height:1.9;overflow-x:auto; }
+  .footer-note { text-align:center;font-size:11px;color:var(--dim);margin-top:40px;padding-top:20px;border-top:1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Merit Loop Annotation Calculator</h1>
+    <div class="sub">Reef Media — Binary vs. Multi-Signal Model Comparison</div>
+  </div>
+  <div class="hero-grid">
+    <div class="hero-box binary">
+      <div class="label-tag">Binary Model</div>
+      <div class="big-number" id="binOut">0</div>
+      <div class="sub-label">QA Annotations / Month</div>
+      <div id="binTier" class="tier-badge tier-0">Below</div>
+    </div>
+    <div class="hero-box multi">
+      <div class="label-tag">Multi-Signal Model</div>
+      <div class="big-number" id="msOut">0</div>
+      <div class="sub-label">Training Signals / Month</div>
+      <div id="msTier" class="tier-badge tier-0">Below</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-bottom:24px;">
+    <div class="multiplier-badge" id="advBadge">Multi-Signal Advantage: 0x</div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-item"><div class="num" id="sDAU">0</div><div class="lbl">Daily Active</div></div>
+    <div class="stat-item"><div class="num" id="sVal">0</div><div class="lbl">Daily Validators</div></div>
+    <div class="stat-item"><div class="num" id="sB6">0</div><div class="lbl">Binary 6-Mo</div></div>
+    <div class="stat-item"><div class="num" id="sM6">0</div><div class="lbl">Multi 6-Mo</div></div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2>Platform Parameters</h2>
+      <div class="slider-group"><div class="slider-label"><span>Monthly Active Users</span><span class="slider-value" id="vMAU">100,000</span></div><input type="range" id="sMAU" min="1000" max="2000000" step="1000" value="100000"></div>
+      <div class="slider-group"><div class="slider-label"><span>DAU / MAU Ratio</span><span class="slider-value" id="vDAU">20%</span></div><input type="range" id="sDAUR" min="5" max="50" step="1" value="20"></div>
+      <div class="slider-group"><div class="slider-label"><span>Validation Rate</span><span class="slider-value" id="vVR">25%</span></div><input type="range" id="sVR" min="5" max="60" step="1" value="25"></div>
+      <div class="slider-group"><div class="slider-label"><span>Avg Depth</span><span class="slider-value" id="vDep">L2 (2.0x)</span></div><input type="range" id="sDep" min="1" max="4" step="1" value="2"></div>
+    </div>
+    <div class="card">
+      <h2>Multi-Signal Parameters</h2>
+      <div class="slider-group"><div class="slider-label"><span>Avg Challenge Dims</span><span class="slider-value" id="vDCh">1.5</span></div><input type="range" id="sDCh" min="10" max="40" step="1" value="15"></div>
+      <div class="slider-group"><div class="slider-label"><span>Avg Endorse Dims</span><span class="slider-value" id="vDEn">1.5</span></div><input type="range" id="sDEn" min="10" max="40" step="1" value="15"></div>
+      <div class="slider-group"><div class="slider-label"><span>Both-Button Rate</span><span class="slider-value" id="vRB">55%</span></div><input type="range" id="sRB" min="10" max="90" step="1" value="55"></div>
+      <div class="slider-group"><div class="slider-label"><span>Endorse Weight (W_en)</span><span class="slider-value" id="vWen">0.50</span></div><input type="range" id="sWen" min="20" max="80" step="5" value="50"></div>
+      <div style="margin-top:12px;"><h2 style="margin-bottom:8px;">Live Formulas</h2><div class="formula-box" id="fBox"></div></div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2>Tipping Points</h2>
+      <table class="tipping-table"><thead><tr><th>Tier</th><th>Req./Mo</th><th>Binary</th><th>Multi</th></tr></thead><tbody id="tBody"></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Volume Comparison</h2>
+      <div class="chart-wrap"><canvas id="cChart"></canvas></div>
+    </div>
+  </div>
+  <div class="footer-note">Reef Media &middot; Enclave Digital Inc. &middot; Confidential<br>Constants: Challenge Rate 30% (binary) &middot; Merit Quality 70% &middot; Contrastive Bonus 0.25 &middot; 30 days/month</div>
+</div>
+<script>
+const CR=0.30,MQ=0.70,DAYS=30,CB=0.25;
+const dm={1:{l:'L1',q:1},2:{l:'L2',q:2},3:{l:'L3',q:4},4:{l:'L4',q:6}};
+const tiers=[{n:'Proof of Concept',t:1000},{n:'Category-Level',t:10000},{n:'Systematic Fine-Tuning',t:100000},{n:'Continuous Learning',t:1000000}];
+const mLvl=[10000,25000,50000,100000,250000,500000,1000000];
+function fmt(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';return Math.round(n).toLocaleString();}
+function fF(n){return Math.round(n).toLocaleString();}
+function ti(v){for(let i=tiers.length-1;i>=0;i--)if(v>=tiers[i].t)return i+1;return 0;}
+function tl(i){return['Below Threshold','Proof of Concept','Category-Level','Systematic Fine-Tuning','Continuous Learning'][i];}
+const cOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:'#8899AA',font:{size:11},usePointStyle:true,pointStyle:'rectRounded'}},tooltip:{callbacks:{label:c=>fF(c.parsed.y)+'/mo'}}},scales:{x:{ticks:{color:'#8899AA',font:{size:10}},grid:{color:'rgba(42,63,85,0.4)'}},y:{type:'logarithmic',ticks:{color:'#8899AA',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(42,63,85,0.4)'}}}};
+const cChart=new Chart(document.getElementById('cChart'),{type:'bar',data:{labels:mLvl.map(m=>fmt(m)),datasets:[{label:'Binary',data:[],backgroundColor:'rgba(232,168,56,0.6)',borderRadius:4},{label:'Multi-Signal',data:[],backgroundColor:'rgba(77,168,218,0.6)',borderRadius:4}]},options:cOpts});
+
+function update(){
+  const mau=+document.getElementById('sMAU').value;
+  const dauP=+document.getElementById('sDAUR').value;
+  const vrP=+document.getElementById('sVR').value;
+  const dep=+document.getElementById('sDep').value;
+  const dCh=(+document.getElementById('sDCh').value)/10;
+  const dEn=(+document.getElementById('sDEn').value)/10;
+  const rbP=+document.getElementById('sRB').value;
+  const wen=(+document.getElementById('sWen').value)/100;
+  const qm=dm[dep].q;
+  document.getElementById('vMAU').textContent=fF(mau);
+  document.getElementById('vDAU').textContent=dauP+'%';
+  document.getElementById('vVR').textContent=vrP+'%';
+  document.getElementById('vDep').textContent=dm[dep].l+' ('+qm+'.0x)';
+  document.getElementById('vDCh').textContent=dCh.toFixed(1);
+  document.getElementById('vDEn').textContent=dEn.toFixed(1);
+  document.getElementById('vRB').textContent=rbP+'%';
+  document.getElementById('vWen').textContent=wen.toFixed(2);
+  const D_bin=dCh;
+  const bM=mau*(dauP/100)*(vrP/100)*D_bin*qm*CR*MQ*DAYS;
+  const dE=(dCh*1.0)+(dEn*wen)+((rbP/100)*CB);
+  const mM=mau*(dauP/100)*(vrP/100)*dE*qm*MQ*DAYS;
+  const dau=Math.round(mau*dauP/100),vals=Math.round(dau*vrP/100);
+  const adv=bM>0?(mM/bM):0;
+  document.getElementById('binOut').textContent=fF(Math.round(bM));
+  document.getElementById('msOut').textContent=fF(Math.round(mM));
+  const bti=ti(bM),mti=ti(mM);
+  const bb=document.getElementById('binTier');bb.textContent=tl(bti);bb.className='tier-badge tier-'+bti;
+  const mb=document.getElementById('msTier');mb.textContent=tl(mti);mb.className='tier-badge tier-'+mti;
+  document.getElementById('advBadge').textContent='Multi-Signal Advantage: '+adv.toFixed(1)+'x';
+  document.getElementById('sDAU').textContent=fF(dau);
+  document.getElementById('sVal').textContent=fF(vals);
+  document.getElementById('sB6').textContent=fmt(Math.round(bM*6));
+  document.getElementById('sM6').textContent=fmt(Math.round(mM*6));
+  document.getElementById('fBox').innerHTML=
+    `<span style="color:var(--bin);font-weight:700;">Binary:</span> ${fF(mau)} &times; ${dauP}% &times; ${vrP}% &times; ${dCh.toFixed(1)}D &times; ${qm}x &times; 0.30 &times; 0.70 &times; 30 = <strong style="color:#fff">${fF(Math.round(bM))}</strong><br><br>`+
+    `<span style="color:var(--multi);font-weight:700;">Multi:</span> ${fF(mau)} &times; ${dauP}% &times; ${vrP}% &times; ${dE.toFixed(3)} D<sub>eff</sub> &times; ${qm}x &times; 0.70 &times; 30 = <strong style="color:#fff">${fF(Math.round(mM))}</strong><br>`+
+    `<span style="font-size:10px;color:var(--dim);">D<sub>eff</sub> = (${dCh.toFixed(1)}&times;1.0) + (${dEn.toFixed(1)}&times;${wen.toFixed(2)}) + (${rbP}%&times;0.25) = ${dE.toFixed(3)}</span>`;
+  const tbody=document.getElementById('tBody');tbody.innerHTML='';
+  tiers.forEach(t=>{
+    const bR=bM>=t.t,mR=mM>=t.t;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${t.n}</td><td>${fF(t.t)}</td><td>${bR?'<span class="check">&#10003;</span>':'<span class="cross">&#10005;</span>'}</td><td>${mR?'<span class="check">&#10003;</span>':'<span class="cross">&#10005;</span>'}</td>`;
+    tbody.appendChild(tr);
+  });
+  const bD=mLvl.map(m=>Math.round(m*(dauP/100)*(vrP/100)*D_bin*qm*CR*MQ*DAYS));
+  const mD=mLvl.map(m=>Math.round(m*(dauP/100)*(vrP/100)*dE*qm*MQ*DAYS));
+  cChart.data.datasets[0].data=bD;cChart.data.datasets[1].data=mD;cChart.update('none');
+}
+document.querySelectorAll('input[type="range"]').forEach(s=>s.addEventListener('input',update));
+update();
+</script>
+</body>
+</html>
